@@ -3,9 +3,69 @@ kind: ConfigMap
 metadata:
   name: ml-pipeline-ui-configmap
 data:
-   viewer-pod-template.json:  |-
+  viewer-pod-template.json: |-
     {
         "spec": {
-            "serviceAccountName": "kubeflow-pipelines-viewer"
+            "serviceAccountName": "kubeflow-pipelines-viewer",
+            "volumes": [
+                {
+                    "name": "minio-ca-cert",
+                    "configMap": {
+                        "name": "minio-ca-cert"
+                    }
+                }
+            ],
+            "containers": [
+                {
+                    "volumeMounts": [
+                        {
+                            "name": "minio-ca-cert",
+                            "mountPath": "/etc/ssl/certs/minio-ca.crt",
+                            "subPath": "ca.crt",
+                            "readOnly": true
+                        }
+                    ],
+                    "env": [
+                        {
+                            "name": "AWS_ACCESS_KEY_ID",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "name": "mlpipeline-minio-artifact",
+                                    "key": "accesskey"
+                                }
+                            }
+                        },
+                        {
+                            "name": "AWS_SECRET_ACCESS_KEY",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "name": "mlpipeline-minio-artifact",
+                                    "key": "secretkey"
+                                }
+                            }
+                        },
+                        {
+                            "name": "AWS_REGION",
+                            "value": "us-east-1"
+                        },
+                        {
+                            "name": "S3_ENDPOINT",
+                            "value": "https://minio.minio-tenant.svc.cluster.local:443"
+                        },
+                        {
+                            "name": "S3_USE_HTTPS",
+                            "value": "1"
+                        },
+                        {
+                            "name": "AWS_CA_BUNDLE",
+                            "value": "/etc/ssl/certs/minio-ca.crt"
+                        },
+                        {
+                            "name": "SSL_CERT_FILE",
+                            "value": "/etc/ssl/certs/minio-ca.crt"
+                        }
+                    ]
+                }
+            ]
         }
     }

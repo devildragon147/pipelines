@@ -3,4 +3,17 @@ kind: ConfigMap
 metadata:
   name: kfp-launcher
 data:
-  defaultPipelineRoot: $(kfp-default-pipeline-root)
+  defaultPipelineRoot: "s3://mlpipeline/v2/artifacts"
+  providers: |
+    s3:
+      default:
+        endpoint: "minio.minio-tenant.svc.cluster.local:443"
+        disableSSL: false        # <-- BẬT TLS (was true)
+        region: "minio"
+        forcePathStyle: true
+        credentials:
+          fromEnv: false
+          secretRef:
+            secretName: mlpipeline-minio-artifact
+            accessKeyKey: accesskey
+            secretKeyKey: secretkey

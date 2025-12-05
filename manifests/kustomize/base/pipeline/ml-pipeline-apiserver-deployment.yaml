@@ -37,8 +37,19 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            # ====== MINIO TLS CONFIG ======
+            - name: OBJECTSTORECONFIG_HOST
+              value: "minio.minio-tenant.svc.cluster.local"
+            - name: OBJECTSTORECONFIG_PORT
+              value: "443"
             - name: OBJECTSTORECONFIG_SECURE
-              value: "false"
+              value: "true"
+            - name: OBJECTSTORECONFIG_REGION
+              value: "us-east-1"
+            # Trust MinIO CA certificate
+            - name: SSL_CERT_FILE
+              value: "/etc/ssl/certs/minio-ca/ca.crt"
+            # ====== END MINIO TLS CONFIG ======
             - name: OBJECTSTORECONFIG_BUCKETNAME
               valueFrom:
                 configMapKeyRef:
@@ -144,9 +155,6 @@ spec:
             initialDelaySeconds: 3
             periodSeconds: 5
             timeoutSeconds: 2
-          # This startup probe provides up to a 60 second grace window before the
-          # liveness probe takes over to accomodate the occasional database
-          # migration.
           startupProbe:
             httpGet:
               path: /apis/v1beta1/healthz
@@ -166,4 +174,16 @@ spec:
             requests:
               cpu: 250m
               memory: 500Mi
+          # ====== MOUNT CA CERT ======
+          volumeMounts:
+            - name: minio-ca
+              mountPath: /etc/ssl/certs/minio-ca
+              readOnly: true
+          # ====== END MOUNT ======
       serviceAccountName: ml-pipeline
+      # ====== VOLUME FOR CA CERT ======
+      volumes:
+        - name: minio-ca
+          configMap:
+            name: minio-ca-cert
+      # ====== END VOLUME ======

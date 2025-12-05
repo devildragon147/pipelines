@@ -7,8 +7,8 @@ resources:
 - ../../base/metadata/options/istio
 - ../../third-party/mysql/base
 - ../../third-party/mysql/options/istio
-- ../../third-party/minio/base
-- ../../third-party/minio/options/istio
+#- ../../third-party/minio/base
+#- ../../third-party/minio/options/istio
 - ../../third-party/metacontroller/base
 
 
