@@ -23,9 +23,9 @@ spec:
         configMap:
           name: ml-pipeline-ui-configmap
 
-      - name: minio-ca-cert
+      - name: minio-ca-chain  # Combined K8s root CA + MinIO cert
         configMap:
-          name: minio-ca-cert
+          name: minio-ca-chain  # Combined K8s root CA + MinIO cert
 
       containers:
       - image: ghcr.io/kubeflow/kfp-frontend:dummy
@@ -38,9 +38,9 @@ spec:
           mountPath: /etc/config
           readOnly: true
 
-        - name: minio-ca-cert
-          mountPath: /etc/ssl/certs/minio-ca.crt
-          subPath: ca.crt
+        - name: minio-ca-chain  # Combined K8s root CA + MinIO cert
+          mountPath: /etc/ssl/certs/minio-ca
+          # Mount as directory like apiserver
           readOnly: true
 
         securityContext:
@@ -67,8 +67,12 @@ spec:
           - name: MINIO_SSL
             value: "true"
           - name: NODE_EXTRA_CA_CERTS
-            value: "/etc/ssl/certs/minio-ca.crt"
-              
+            value: "/etc/ssl/certs/minio-ca/ca.crt"
+          - name: AWS_CA_BUNDLE
+            value: "/etc/ssl/certs/minio-ca/ca.crt"
+          - name: SSL_CERT_FILE
+            value: "/etc/ssl/certs/minio-ca/ca.crt"
+
           - name: MINIO_ACCESS_KEY
             valueFrom:
               secretKeyRef:
